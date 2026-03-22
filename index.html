@@ -18,203 +18,111 @@
     --radius: 16px;
     --shadow: 0 8px 40px rgba(27,58,107,0.13);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   body {
     font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
     background: var(--navy-dark);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex; flex-direction: column; align-items: center;
   }
-
-  /* ── Header ── */
   .header {
     width: 100%;
     background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
-    padding: 40px 32px 30px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+    padding: 40px 32px 30px; text-align: center; position: relative; overflow: hidden;
   }
-  .header::before {
-    content: ''; position: absolute;
-    top: -60px; right: -60px;
-    width: 200px; height: 200px;
-    border-radius: 50%;
-    background: rgba(201,168,76,0.07);
-  }
-  .header::after {
-    content: ''; position: absolute;
-    bottom: -40px; left: -40px;
-    width: 150px; height: 150px;
-    border-radius: 50%;
-    background: rgba(201,168,76,0.05);
-  }
-  .logo-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(201,168,76,0.15);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 100px; padding: 7px 18px; margin-bottom: 14px;
-  }
-  .logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
-  .logo-text { font-size: 12px; font-weight: 700; color: var(--gold-light); letter-spacing: 0.1em; text-transform: uppercase; }
-  .header h1 { font-size: 34px; font-weight: 700; color: var(--white); margin-bottom: 6px; letter-spacing: -0.5px; }
-  .header p { font-size: 15px; color: rgba(255,255,255,0.5); font-weight: 300; }
-
-  .sync-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 100px; padding: 5px 14px; margin-top: 14px;
-    font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 500;
-  }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #888; transition: background 0.3s; }
-  .sync-dot.ok  { background: #4CAF50; box-shadow: 0 0 6px #4CAF50; }
-  .sync-dot.go  { background: var(--gold); animation: blink 1s infinite; }
-  .sync-dot.err { background: #ef5350; }
+  .header::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; border-radius:50%; background:rgba(201,168,76,0.07); }
+  .header::after  { content:''; position:absolute; bottom:-40px; left:-40px; width:150px; height:150px; border-radius:50%; background:rgba(201,168,76,0.05); }
+  .logo-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.3); border-radius:100px; padding:7px 18px; margin-bottom:14px; }
+  .logo-dot { width:7px; height:7px; border-radius:50%; background:var(--gold); }
+  .logo-text { font-size:12px; font-weight:700; color:var(--gold-light); letter-spacing:0.1em; text-transform:uppercase; }
+  .header h1 { font-size:34px; font-weight:700; color:var(--white); margin-bottom:6px; }
+  .header p  { font-size:15px; color:rgba(255,255,255,0.5); }
+  .sync-pill { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:100px; padding:5px 14px; margin-top:14px; font-size:12px; color:rgba(255,255,255,0.45); }
+  .sync-dot { width:7px; height:7px; border-radius:50%; background:#888; transition:background 0.3s; }
+  .sync-dot.ok  { background:#4CAF50; box-shadow:0 0 6px #4CAF50; }
+  .sync-dot.go  { background:var(--gold); animation:blink 1s infinite; }
+  .sync-dot.err { background:#ef5350; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* ── Property banner ── */
-  .prop-banner {
-    width: calc(100% - 32px); max-width: 680px;
-    background: var(--gold);
-    padding: 11px 24px;
-    border-radius: 0 0 14px 14px;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-  }
-  .prop-label { font-size: 10px; font-weight: 700; color: rgba(17,38,72,0.6); text-transform: uppercase; letter-spacing: 0.1em; }
-  .prop-divider { width: 1px; height: 22px; background: rgba(17,38,72,0.18); }
-  .prop-address { font-size: 14px; font-weight: 700; color: var(--navy-dark); }
+  .prop-banner { width:calc(100% - 32px); max-width:680px; background:var(--gold); padding:11px 24px; border-radius:0 0 14px 14px; display:flex; align-items:center; justify-content:center; gap:12px; }
+  .prop-label   { font-size:10px; font-weight:700; color:rgba(17,38,72,0.6); text-transform:uppercase; letter-spacing:0.1em; }
+  .prop-divider { width:1px; height:22px; background:rgba(17,38,72,0.18); }
+  .prop-address { font-size:14px; font-weight:700; color:var(--navy-dark); }
 
-  /* ── Cards ── */
-  .card {
-    width: calc(100% - 32px); max-width: 680px;
-    background: var(--white); border-radius: var(--radius);
-    margin: 20px auto; padding: 36px 32px 32px;
-    box-shadow: var(--shadow);
-  }
-  .card-title { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 6px; letter-spacing: -0.3px; }
-  .card-sub   { font-size: 14px; color: var(--gray); margin-bottom: 28px; line-height: 1.5; }
+  .card { width:calc(100% - 32px); max-width:680px; background:var(--white); border-radius:var(--radius); margin:20px auto; padding:36px 32px 32px; box-shadow:var(--shadow); }
+  .card-title { font-size:22px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+  .card-sub   { font-size:14px; color:var(--gray); margin-bottom:24px; line-height:1.5; }
 
-  /* ── Fields ── */
-  .field { margin-bottom: 20px; }
-  .field label {
-    display: block; font-size: 11px; font-weight: 700;
-    color: var(--navy); margin-bottom: 8px;
-    letter-spacing: 0.07em; text-transform: uppercase;
-  }
-  .opt { font-size: 10px; font-weight: 400; color: var(--gray); text-transform: none; letter-spacing: 0; margin-left: 5px; }
-  .field input {
-    width: 100%; padding: 18px 20px;
-    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 17px; color: var(--navy-dark);
-    background: var(--cream);
-    border: 2px solid transparent; border-radius: 12px;
-    outline: none; -webkit-appearance: none;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .field input::placeholder { color: #C0BDB8; }
-  .field input:focus { border-color: var(--gold); background: #fff; }
-  .field input.err { border-color: #e53935; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { margin-bottom:20px; }
+  .field label { display:block; font-size:11px; font-weight:700; color:var(--navy); margin-bottom:8px; letter-spacing:0.07em; text-transform:uppercase; }
+  .opt { font-size:10px; font-weight:400; color:var(--gray); text-transform:none; letter-spacing:0; margin-left:5px; }
+  .field input { width:100%; padding:18px 20px; font-family:inherit; font-size:17px; color:var(--navy-dark); background:var(--cream); border:2px solid transparent; border-radius:12px; outline:none; -webkit-appearance:none; transition:border-color 0.2s, background 0.2s; }
+  .field input::placeholder { color:#C0BDB8; }
+  .field input:focus { border-color:var(--gold); background:#fff; }
+  .field input.err { border-color:#e53935; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 
-  /* ── Button ── */
-  .btn {
-    width: 100%; padding: 20px;
-    background: linear-gradient(135deg, var(--navy), var(--navy-dark));
-    color: #fff; font-family: inherit;
-    font-size: 17px; font-weight: 700;
-    border: none; border-radius: 12px;
-    cursor: pointer; margin-top: 8px;
-    letter-spacing: 0.02em;
-    transition: transform 0.12s, opacity 0.2s;
-    position: relative; overflow: hidden;
-  }
-  .btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(201,168,76,0.12), transparent); }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.55; }
-  .btn-gold {
-    background: var(--gold); color: var(--navy-dark);
-    font-size: 16px;
-  }
-  .btn-sm {
-    width: auto; padding: 13px 36px; margin-top: 0; font-size: 15px;
-  }
+  .btn { width:100%; padding:20px; background:linear-gradient(135deg, var(--navy), var(--navy-dark)); color:#fff; font-family:inherit; font-size:17px; font-weight:700; border:none; border-radius:12px; cursor:pointer; margin-top:8px; transition:transform 0.12s, opacity 0.2s; position:relative; overflow:hidden; }
+  .btn::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,168,76,0.12),transparent); }
+  .btn:active { transform:scale(0.98); }
+  .btn:disabled { opacity:0.55; }
+  .btn-gold { background:var(--gold); color:var(--navy-dark); }
+  .btn-sm   { width:auto; padding:13px 36px; margin-top:0; font-size:15px; }
 
-  /* ── Success ── */
-  .success { display: none; flex-direction: column; align-items: center; text-align: center; padding: 16px 0; }
-  .tick {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: linear-gradient(135deg, #2D7D46, #43A85F);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 38px; margin-bottom: 20px;
-  }
-  .success h2 { font-size: 26px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-  .success p  { font-size: 15px; color: var(--gray); margin-bottom: 6px; max-width: 260px; line-height: 1.5; }
-  .sync-msg   { font-size: 13px; font-weight: 700; color: #2D7D46; margin-bottom: 24px; }
+  .success { display:none; flex-direction:column; align-items:center; text-align:center; padding:16px 0; }
+  .tick { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#2D7D46,#43A85F); display:flex; align-items:center; justify-content:center; font-size:38px; margin-bottom:20px; }
+  .success h2   { font-size:26px; font-weight:700; color:var(--navy); margin-bottom:8px; }
+  .success p    { font-size:15px; color:var(--gray); margin-bottom:6px; max-width:260px; line-height:1.5; }
+  .sync-msg     { font-size:13px; font-weight:700; color:#2D7D46; margin-bottom:24px; }
 
-  /* ── Setup screen ── */
-  .setup-note { font-size: 13px; color: var(--gray); line-height: 1.6; margin-bottom: 20px; }
-  .setup-note b { color: var(--navy); }
+  /* Settings gear */
+  .gear-btn { position:fixed; bottom:20px; right:20px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:100; }
 
-  /* ── Log ── */
-  .log-wrap { width: calc(100% - 32px); max-width: 680px; margin: 0 auto 16px; }
-  .log-hdr  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .log-lbl  { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; }
-  .log-cnt  { background: var(--gold); color: var(--navy-dark); font-size: 12px; font-weight: 800; padding: 3px 12px; border-radius: 100px; }
-  .log-list { display: flex; flex-direction: column; gap: 7px; max-height: 260px; overflow-y: auto; }
-  .log-item {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 10px; padding: 11px 14px;
-    display: flex; align-items: center; gap: 11px;
-  }
-  .avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--gold);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 800; color: var(--navy-dark); flex-shrink: 0;
-  }
-  .log-info { flex: 1; min-width: 0; }
-  .log-name  { font-size: 13px; font-weight: 700; color: #fff; }
-  .log-email { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .log-meta  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .log-time  { font-size: 10px; color: rgba(255,255,255,0.25); }
-  .badge { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 700; }
-  .badge.synced  { background: rgba(76,175,80,0.18); color: #81C784; }
-  .badge.pending { background: rgba(201,168,76,0.18); color: var(--gold-light); }
+  /* Settings modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:var(--radius); padding:28px 24px; width:calc(100% - 40px); max-width:500px; }
+  .modal h3 { font-size:18px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+  .modal p  { font-size:13px; color:var(--gray); margin-bottom:20px; line-height:1.5; }
+  .modal-url { font-size:11px; color:var(--navy); word-break:break-all; background:var(--cream); padding:12px; border-radius:8px; margin-bottom:16px; }
+  .modal-btns { display:flex; gap:10px; }
+  .modal-btns button { flex:1; padding:14px; border:none; border-radius:10px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+  .btn-cancel { background:#f0f0f0; color:#666; }
+  .btn-change { background:var(--navy); color:#fff; }
+  .btn-danger { background:#e53935; color:#fff; }
 
-  /* ── Export bar ── */
-  .xbar { width: calc(100% - 32px); max-width: 680px; margin: 0 auto 36px; display: flex; gap: 10px; }
-  .xbtn {
-    flex: 1; padding: 13px 8px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px; color: #fff;
-    font-family: inherit; font-size: 13px; font-weight: 600;
-    cursor: pointer; text-align: center;
-  }
-  .xbtn.gold { background: var(--gold); border-color: var(--gold); color: var(--navy-dark); }
+  .log-wrap { width:calc(100% - 32px); max-width:680px; margin:0 auto 16px; }
+  .log-hdr  { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .log-lbl  { font-size:11px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; }
+  .log-cnt  { background:var(--gold); color:var(--navy-dark); font-size:12px; font-weight:800; padding:3px 12px; border-radius:100px; }
+  .log-list { display:flex; flex-direction:column; gap:7px; max-height:260px; overflow-y:auto; }
+  .log-item { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 14px; display:flex; align-items:center; gap:11px; }
+  .avatar   { width:36px; height:36px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; color:var(--navy-dark); flex-shrink:0; }
+  .log-info { flex:1; min-width:0; }
+  .log-name  { font-size:13px; font-weight:700; color:#fff; }
+  .log-email { font-size:11px; color:rgba(255,255,255,0.4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .log-meta  { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .log-time  { font-size:10px; color:rgba(255,255,255,0.25); }
+  .badge { font-size:10px; padding:2px 8px; border-radius:100px; font-weight:700; }
+  .badge.synced  { background:rgba(76,175,80,0.18); color:#81C784; }
+  .badge.pending { background:rgba(201,168,76,0.18); color:var(--gold-light); }
 
-  .footer { text-align: center; padding: 0 0 28px; font-size: 11px; color: rgba(255,255,255,0.18); }
+  .xbar { width:calc(100% - 32px); max-width:680px; margin:0 auto 36px; display:flex; gap:10px; }
+  .xbtn { flex:1; padding:13px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; text-align:center; }
+  .xbtn.gold { background:var(--gold); border-color:var(--gold); color:var(--navy-dark); }
 
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+  .footer { text-align:center; padding:0 0 80px; font-size:11px; color:rgba(255,255,255,0.18); }
 
-  @media (max-width: 520px) {
-    .row { grid-template-columns: 1fr; gap: 0; }
-    .card { padding: 26px 18px 22px; }
-    .header { padding: 30px 20px 22px; }
-    .header h1 { font-size: 28px; }
+  @media (max-width:520px) {
+    .row { grid-template-columns:1fr; gap:0; }
+    .card { padding:26px 18px 22px; }
+    .header { padding:30px 20px 22px; }
+    .header h1 { font-size:28px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="logo-badge"><div class="logo-dot"></div><span class="logo-text">RJ Realty</span></div>
   <h1>Welcome!</h1>
@@ -225,20 +133,16 @@
   </div>
 </div>
 
-<!-- Property banner -->
 <div class="prop-banner">
   <span class="prop-label">Open House</span>
   <div class="prop-divider"></div>
   <span class="prop-address" id="propDisplay">—</span>
 </div>
 
-<!-- Setup card (first time only) -->
+<!-- Setup card -->
 <div class="card" id="setupCard" style="display:none">
   <p class="card-title">⚙️ One-Time Setup</p>
-  <p class="setup-note">
-    Paste your <b>Google Apps Script URL</b> below — this sends every sign-in directly to your Google Sheet.<br><br>
-    You only do this once. After saving, just enter the property address before each open house.
-  </p>
+  <p class="card-sub">Paste your Google Apps Script URL — connects sign-ins directly to your Google Sheet. You only do this once.</p>
   <div class="field">
     <label>Google Apps Script URL</label>
     <input type="url" id="inScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" autocapitalize="none" autocorrect="off">
@@ -250,7 +154,7 @@
   <button class="btn" onclick="saveSetup()">Save & Start →</button>
 </div>
 
-<!-- Change property card (returning visits) -->
+<!-- Property card -->
 <div class="card" id="propCard" style="display:none">
   <p class="card-title">Today's Property</p>
   <p class="card-sub">Enter the address for this open house.</p>
@@ -266,7 +170,6 @@
   <div id="formSection">
     <p class="card-title">Guest Sign-In</p>
     <p class="card-sub">Your info stays private — we'll follow up with property details.</p>
-
     <div class="field">
       <label>Full Name <span style="color:#e53935">*</span></label>
       <input type="text" id="fName" placeholder="e.g. David Chen" autocomplete="off" autocorrect="off">
@@ -285,11 +188,9 @@
         <input type="text" id="fWechat" placeholder="WeChat or LINE ID" autocomplete="off" autocorrect="off">
       </div>
     </div>
-
     <button class="btn" id="submitBtn" onclick="submitForm()">Sign In →</button>
   </div>
 
-  <!-- Success screen -->
   <div class="success" id="successSection">
     <div class="tick">✓</div>
     <h2>Thank you!</h2>
@@ -310,59 +211,70 @@
 
 <!-- Export bar -->
 <div class="xbar" id="xbar" style="display:none">
-  <button class="xbtn" onclick="clearAll()">🗑 Reset</button>
   <button class="xbtn" onclick="retrySync()">↻ Sync</button>
   <button class="xbtn gold" onclick="exportCSV()">⬇ Export CSV</button>
 </div>
 
 <div class="footer">RJ Realty · Ricky Lee · DRE# 01932116 · (909) 348-3956</div>
 
-<script>
-// ── Keys ──────────────────────────────────────────────
-const K = { guests:'rj_g', prop:'rj_p', script:'rj_s' };
+<!-- Settings gear button -->
+<div class="gear-btn" onclick="openSettings()">⚙️</div>
 
-// ── State ─────────────────────────────────────────────
+<!-- Settings modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>⚙️ Settings</h3>
+    <p>Current Apps Script URL:</p>
+    <div class="modal-url" id="currentUrl">—</div>
+    <div class="modal-btns">
+      <button class="modal-btns btn-cancel" onclick="closeSettings()" style="flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#f0f0f0;color:#666;">Cancel</button>
+      <button class="modal-btns btn-change" onclick="changeScriptUrl()" style="flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;">Change URL</button>
+      <button class="modal-btns btn-danger" onclick="fullReset()" style="flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e53935;color:#fff;">Full Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const K = { guests:'rj_g', prop:'rj_p', script:'rj_s' };
 let guests    = JSON.parse(localStorage.getItem(K.guests) || '[]');
 let property  = localStorage.getItem(K.prop)   || '';
 let scriptUrl = localStorage.getItem(K.script) || '';
 
-// ── Boot ──────────────────────────────────────────────
 window.onload = () => {
-  if (!scriptUrl) {
-    show('setupCard');
-  } else if (!property) {
-    show('propCard');
-  } else {
-    showMain();
+  // Check URL param for force reset
+  if (location.search.includes('reset=1')) {
+    Object.values(K).forEach(k => localStorage.removeItem(k));
+    guests = []; property = ''; scriptUrl = '';
+    history.replaceState(null,'',location.pathname);
   }
+  if (!scriptUrl) { show('setupCard'); }
+  else if (!property) { show('propCard'); }
+  else { showMain(); }
   renderLog();
 };
 
 function show(id) {
-  ['setupCard','propCard','mainCard'].forEach(i => {
-    document.getElementById(i).style.display = i === id ? 'block' : 'none';
-  });
+  ['setupCard','propCard','mainCard'].forEach(i =>
+    document.getElementById(i).style.display = i===id ? 'block' : 'none'
+  );
 }
 
 function showMain() {
   document.getElementById('propDisplay').textContent = property;
   show('mainCard');
-  setSyncStatus('ok', 'Connected to Google Sheet');
+  setSyncStatus('ok','Connected to Google Sheet');
   setTimeout(() => document.getElementById('fName').focus(), 150);
 }
 
-// ── Setup ─────────────────────────────────────────────
 function saveSetup() {
   const url  = document.getElementById('inScriptUrl').value.trim();
   const prop = document.getElementById('inPropSetup').value.trim();
   if (!url)  { document.getElementById('inScriptUrl').classList.add('err'); return; }
   if (!prop) { document.getElementById('inPropSetup').classList.add('err'); return; }
-  if (!url.startsWith('https://script.google.com')) {
-    alert('URL must start with https://script.google.com'); return;
-  }
+  if (!url.startsWith('https://script.google.com')) { alert('URL must start with https://script.google.com'); return; }
   scriptUrl = url; property = prop;
   localStorage.setItem(K.script, scriptUrl);
-  localStorage.setItem(K.prop,   property);
+  localStorage.setItem(K.prop, property);
   showMain();
 }
 
@@ -374,7 +286,6 @@ function setProperty() {
   showMain();
 }
 
-// ── Submit ─────────────────────────────────────────────
 async function submitForm() {
   const name   = document.getElementById('fName').value.trim();
   const email  = document.getElementById('fEmail').value.trim();
@@ -382,7 +293,7 @@ async function submitForm() {
   const wechat = document.getElementById('fWechat').value.trim();
 
   let ok = true;
-  [['fName', name], ['fEmail', email]].forEach(([id, val]) => {
+  [['fName',name],['fEmail',email]].forEach(([id,val]) => {
     document.getElementById(id).classList.toggle('err', !val);
     if (!val) ok = false;
   });
@@ -393,13 +304,13 @@ async function submitForm() {
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = 'Saving...';
-  setSyncStatus('go', 'Saving to Google Sheet...');
+  setSyncStatus('go','Saving to Google Sheet...');
 
   const now = new Date();
   const entry = {
     name, email, phone, wechat, property,
     date: now.toLocaleDateString('en-US'),
-    time: now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}),
+    time: now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),
     timestamp: now.toISOString(),
     synced: false
   };
@@ -411,34 +322,32 @@ async function submitForm() {
   document.getElementById('syncMsg').textContent = entry.synced
     ? '✅ Saved to Google Sheet'
     : '⚠️ No connection — saved locally. Tap Sync later.';
-
   setSyncStatus(entry.synced ? 'ok' : 'err',
     entry.synced ? 'Connected to Google Sheet' : 'Offline — saved locally');
 
   btn.disabled = false; btn.textContent = 'Sign In →';
   document.getElementById('formSection').style.display = 'none';
   const s = document.getElementById('successSection');
-  s.style.display = 'flex'; s.style.flexDirection = 'column'; s.style.alignItems = 'center';
+  s.style.display='flex'; s.style.flexDirection='column'; s.style.alignItems='center';
   renderLog();
 }
 
 function nextGuest() {
   ['fName','fEmail','fPhone','fWechat'].forEach(id => {
-    document.getElementById(id).value = '';
+    document.getElementById(id).value='';
     document.getElementById(id).classList.remove('err');
   });
-  document.getElementById('formSection').style.display = 'block';
-  document.getElementById('successSection').style.display = 'none';
+  document.getElementById('formSection').style.display='block';
+  document.getElementById('successSection').style.display='none';
   document.getElementById('fName').focus();
 }
 
-// ── Sync ──────────────────────────────────────────────
 async function syncEntry(entry) {
   if (!scriptUrl) return false;
   try {
     await fetch(scriptUrl, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify(entry)
     });
     return true;
@@ -446,45 +355,37 @@ async function syncEntry(entry) {
 }
 
 async function retrySync() {
-  const pending = guests.filter(g => !g.synced);
+  const pending = guests.filter(g=>!g.synced);
   if (!pending.length) { alert('All entries already synced! ✅'); return; }
-  setSyncStatus('go', `Syncing ${pending.length} pending...`);
-  let done = 0;
-  for (const g of pending) {
-    if (await syncEntry(g)) { g.synced = true; done++; }
-  }
+  setSyncStatus('go',`Syncing ${pending.length} pending...`);
+  let done=0;
+  for (const g of pending) { if (await syncEntry(g)) { g.synced=true; done++; } }
   localStorage.setItem(K.guests, JSON.stringify(guests));
   renderLog();
-  setSyncStatus('ok', 'Connected to Google Sheet');
+  setSyncStatus('ok','Connected to Google Sheet');
   alert(`Synced ${done} of ${pending.length} entries.`);
 }
 
-// ── Status ────────────────────────────────────────────
 function setSyncStatus(state, label) {
   const dot = document.getElementById('syncDot');
-  dot.className = 'sync-dot';
-  if (state === 'ok')  dot.classList.add('ok');
-  if (state === 'go')  dot.classList.add('go');
-  if (state === 'err') dot.classList.add('err');
+  dot.className='sync-dot';
+  if (state==='ok')  dot.classList.add('ok');
+  if (state==='go')  dot.classList.add('go');
+  if (state==='err') dot.classList.add('err');
   document.getElementById('syncLbl').textContent = label;
 }
 
-// ── Log ───────────────────────────────────────────────
 function renderLog() {
   const n = guests.length;
   document.getElementById('logCnt').textContent = n;
-  document.getElementById('logWrap').style.display = n ? 'block' : 'none';
-  document.getElementById('xbar').style.display    = n ? 'flex'  : 'none';
-  const list = document.getElementById('logList');
-  list.innerHTML = [...guests].reverse().map(g => {
+  document.getElementById('logWrap').style.display = n?'block':'none';
+  document.getElementById('xbar').style.display    = n?'flex':'none';
+  document.getElementById('logList').innerHTML = [...guests].reverse().map(g => {
     const ini = g.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    const detail = [g.email, g.wechat].filter(Boolean).join(' · ');
+    const detail = [g.email,g.wechat].filter(Boolean).join(' · ');
     return `<div class="log-item">
       <div class="avatar">${ini}</div>
-      <div class="log-info">
-        <div class="log-name">${g.name}</div>
-        <div class="log-email">${detail}</div>
-      </div>
+      <div class="log-info"><div class="log-name">${g.name}</div><div class="log-email">${detail}</div></div>
       <div class="log-meta">
         <span class="badge ${g.synced?'synced':'pending'}">${g.synced?'Synced':'Pending'}</span>
         <span class="log-time">${g.time}</span>
@@ -493,7 +394,6 @@ function renderLog() {
   }).join('');
 }
 
-// ── Export ────────────────────────────────────────────
 function exportCSV() {
   if (!guests.length) return;
   const rows = guests.map(g =>
@@ -508,20 +408,37 @@ function exportCSV() {
   a.click();
 }
 
-// ── Reset ─────────────────────────────────────────────
-function clearAll() {
-  if (!confirm(`Reset everything?\n\n${guests.length} entries will be cleared locally.\n(Already-synced entries stay in Google Sheet)`)) return;
-  [K.guests, K.prop].forEach(k => localStorage.removeItem(k));
-  location.reload();
+// ── Settings modal ─────────────────────────────────
+function openSettings() {
+  document.getElementById('currentUrl').textContent = scriptUrl || 'Not set';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeSettings() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+function changeScriptUrl() {
+  closeSettings();
+  const newUrl = prompt('Paste your new Google Apps Script URL:');
+  if (!newUrl) return;
+  if (!newUrl.startsWith('https://script.google.com')) { alert('Invalid URL'); return; }
+  scriptUrl = newUrl.trim();
+  localStorage.setItem(K.script, scriptUrl);
+  alert('✅ Apps Script URL updated!');
+  setSyncStatus('ok','Connected to Google Sheet');
+}
+function fullReset() {
+  if (!confirm('Full reset — clears ALL data including Apps Script URL.\n\nYou will need to re-enter the URL.\n\nContinue?')) return;
+  Object.values(K).forEach(k => localStorage.removeItem(k));
+  location.href = location.pathname + '?reset=1';
 }
 
-// Prevent double-tap zoom on iPad
-let last = 0;
+// Prevent double-tap zoom
+let last=0;
 document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - last < 300) e.preventDefault();
-  last = now;
-}, {passive:false});
+  const now=Date.now();
+  if(now-last<300) e.preventDefault();
+  last=now;
+},{passive:false});
 </script>
 </body>
 </html>
