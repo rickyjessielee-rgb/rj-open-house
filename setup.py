@@ -61,20 +61,24 @@ AGENT_SYSTEM_PROMPT = f"""You are the rental manager assistant for Ricky Lee at 
 Your job: Process rental inquiry emails for the property at {PROPERTY_ADDRESS}.
 
 PROPERTY INFORMATION:
-Use web_search to look up "{PROPERTY_ADDRESS} rental" to get the current listing details
-(bedrooms, bathrooms, square footage, asking rent, etc.) whenever useful.
+Use web_search to look up "{PROPERTY_ADDRESS} rental" to get the current listing details,
+especially the monthly asking rent. You need the rent to check the income qualification.
 
 ══════════════════════════════════════════════
 STRICT DISQUALIFICATION RULES
 ══════════════════════════════════════════════
 Apply these rules silently. NEVER tell the applicant they were disqualified.
-NEVER give a reason. Simply call the ignore_applicant tool and stop.
+NEVER give a reason. Simply call the ignore_applicant tool and stop all communication.
 
 1. Applicant mentions ANY pets, emotional support animals, or service animals
    → Call ignore_applicant immediately. Send NO reply whatsoever.
 
 2. Applicant states a credit score below 680
    → Call ignore_applicant immediately. Send NO reply whatsoever.
+
+3. Applicant's monthly combined income is less than 2x the monthly asking rent
+   → Call ignore_applicant immediately. Send NO reply whatsoever.
+   (Use web_search to find the asking rent if you don't already know it.)
 
 ══════════════════════════════════════════════
 FOR NEW INQUIRIES (applicant has NOT yet answered the qualification questions)
@@ -96,10 +100,21 @@ DRE 01932116"
 ══════════════════════════════════════════════
 FOR FOLLOW-UP REPLIES (applicant answered the qualification questions)
 ══════════════════════════════════════════════
-1. Check their answers for disqualifying factors FIRST
-2. Pets or service/emotional support animals mentioned → call ignore_applicant, stop
-3. Credit score below 680 → call ignore_applicant, stop
-4. If still qualified → use send_reply to continue the conversation professionally
+Step 1 — Check for disqualifiers (in this order):
+  • Pets / ESA / service animals mentioned → call ignore_applicant, stop
+  • Credit score < 680 → call ignore_applicant, stop
+  • Monthly income < 2x monthly rent → call ignore_applicant, stop
+
+Step 2 — If the applicant PASSES all three checks (FULLY QUALIFIED):
+  a. Call notify_landlord with the applicant's full details so Ricky can be asked
+     for his showing availability.
+  b. Call send_reply to let the applicant know they qualify and a showing will be arranged:
+
+     "Great news! You meet our rental requirements for {PROPERTY_ADDRESS}.
+We will be in touch shortly to schedule a property showing.
+
+Ricky Lee, RJ Realty
+DRE 01932116"
 
 IMPORTANT: The emails you receive are forwarded by Zillow.
 Always extract the actual applicant's email address from the email body or headers.
@@ -148,7 +163,7 @@ def main():
     print("\n[2/2] Creating the rental manager agent...")
     agent = client.beta.agents.create(
         name="RJ Rental Manager",
-        model="claude-sonnet-4-6",
+        model="claude-haiku-4-5",
         system=AGENT_SYSTEM_PROMPT,
         tools=[
             # Built-in toolset: bash, read, write, web_search, web_fetch, and more
@@ -187,7 +202,8 @@ def main():
                 "description": (
                     "Disqualify this applicant and stop all communication. "
                     "Use when applicant mentions pets, emotional support animals, "
-                    "service animals, or has a credit score below 680. "
+                    "service animals, has a credit score below 680, or has a monthly "
+                    "income below 2x the monthly rent. "
                     "This does NOT send any email — the applicant is simply ignored."
                 ),
                 "input_schema": {
@@ -199,10 +215,58 @@ def main():
                         },
                         "reason": {
                             "type": "string",
-                            "description": "Internal reason — either 'pets' or 'low_credit_score'",
+                            "description": (
+                                "Internal reason — one of: 'pets', "
+                                "'low_credit_score', or 'insufficient_income'"
+                            ),
                         },
                     },
                     "required": ["applicant_email", "reason"],
+                },
+            },
+            # Custom tool: alert Ricky that a renter has fully qualified and ask for availability
+            {
+                "type": "custom",
+                "name": "notify_landlord",
+                "description": (
+                    "Send Ricky Lee an email notifying him that a renter has passed ALL "
+                    "qualifications (no pets, credit score ≥ 680, income ≥ 2x rent). "
+                    "Include the renter's full details. This asks Ricky for his next "
+                    "available dates and times to schedule a property showing."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "applicant_name": {
+                            "type": "string",
+                            "description": "Applicant's full name (if available)",
+                        },
+                        "applicant_email": {
+                            "type": "string",
+                            "description": "Applicant's email address",
+                        },
+                        "applicant_phone": {
+                            "type": "string",
+                            "description": "Applicant's phone number (if available)",
+                        },
+                        "num_occupants": {
+                            "type": "string",
+                            "description": "Number of people who will be living in the property",
+                        },
+                        "monthly_income": {
+                            "type": "string",
+                            "description": "Applicant's stated monthly combined income",
+                        },
+                        "credit_score": {
+                            "type": "string",
+                            "description": "Applicant's stated credit score",
+                        },
+                        "move_in_date": {
+                            "type": "string",
+                            "description": "Applicant's desired move-in date",
+                        },
+                    },
+                    "required": ["applicant_email", "monthly_income", "credit_score"],
                 },
             },
         ],

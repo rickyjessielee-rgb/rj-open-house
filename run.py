@@ -147,6 +147,39 @@ def fetch_zillow_emails() -> list[dict]:
 
 # ─── Gmail: Send email ──────────────────────────────────────────────────────────
 
+def build_landlord_notification(info: dict) -> str:
+    """
+    Build the email body sent to Ricky when a renter passes all qualifications.
+    Asks Ricky for his showing availability.
+    """
+    lines = [
+        "A renter has passed ALL qualifications for 12977 Radiance Ct, Eastvale, CA.",
+        "",
+        "══════════════════════════════════════",
+        "  QUALIFIED APPLICANT DETAILS",
+        "══════════════════════════════════════",
+        f"  Name          : {info.get('applicant_name', 'Not provided')}",
+        f"  Email         : {info.get('applicant_email', 'Not provided')}",
+        f"  Phone         : {info.get('applicant_phone', 'Not provided')}",
+        f"  Occupants     : {info.get('num_occupants', 'Not provided')}",
+        f"  Monthly Income: {info.get('monthly_income', 'Not provided')}",
+        f"  Credit Score  : {info.get('credit_score', 'Not provided')}",
+        f"  Move-in Date  : {info.get('move_in_date', 'Not provided')}",
+        "",
+        "══════════════════════════════════════",
+        "  ACTION NEEDED FROM YOU (Ricky)",
+        "══════════════════════════════════════",
+        "  Please reply to this email with your available",
+        "  dates and times to show the property.",
+        "",
+        "  The rental agent will then contact the applicant",
+        "  to confirm the showing schedule.",
+        "",
+        "— RJ Rental Manager (automated)",
+    ]
+    return "\n".join(lines)
+
+
 def send_email(to_address: str, original_subject: str, body_text: str):
     """Send an email reply via Gmail's SMTP server."""
     msg = MIMEMultipart()
@@ -171,7 +204,7 @@ def send_email(to_address: str, original_subject: str, body_text: str):
 def run_agent_on_email(em: dict, config: dict) -> tuple:
     """
     Start a Managed Agent session to decide what to do with one email.
-    Returns: (reply_text, reply_to_email, was_disqualified)
+    Returns: (reply_text, reply_to_email, was_disqualified, landlord_notified)
     """
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
@@ -189,10 +222,17 @@ EMAIL BODY:
 ---
 Instructions:
 1. Extract the applicant's actual email address from the content above.
-2. Apply the disqualification rules (pets / credit score below 680).
+2. Apply the disqualification rules in order:
+   a. Pets / ESA / service animals mentioned → call ignore_applicant immediately.
+   b. Credit score below 680 → call ignore_applicant immediately.
+   c. Monthly income less than 2x the monthly rent → call ignore_applicant immediately.
+      (Use web_search to find the current asking rent if needed.)
 3. If disqualified → call ignore_applicant. Do NOT send any reply.
-4. If not disqualified → call send_reply with the qualification questions
-   (or continue the conversation if they already answered).
+4. If not yet disqualified and qualification questions not yet answered →
+   call send_reply with the standard five questions.
+5. If applicant answered all questions and passes all checks (fully qualified) →
+   call notify_landlord with their details, then call send_reply to confirm a
+   showing will be arranged.
 """
 
     # Create a fresh session for this email
@@ -202,10 +242,11 @@ Instructions:
         title=f"Inquiry: {em['subject'][:60]}",
     )
 
-    reply_text       = None
-    reply_email      = None
-    was_disqualified = False
-    iteration        = 0
+    reply_text        = None
+    reply_email       = None
+    was_disqualified  = False
+    landlord_notified = False
+    iteration         = 0
 
     try:
         # Outer loop: keep going until the agent is fully done
@@ -273,6 +314,30 @@ Instructions:
                         "content": [{"type": "text", "text": "Applicant disqualified and logged."}],
                     })
 
+                elif call.tool_name == "notify_landlord":
+                    # Applicant passed everything — email Ricky asking for his availability
+                    applicant_info = call.input
+                    notification   = build_landlord_notification(applicant_info)
+                    applicant_email = applicant_info.get("applicant_email", "")
+                    send_email(
+                        to_address=GMAIL_ADDRESS,
+                        original_subject=(
+                            f"✅ Qualified Renter Ready — Please Send Your Showing "
+                            f"Availability ({applicant_email})"
+                        ),
+                        body_text=notification,
+                    )
+                    landlord_notified = True
+                    print(f"    📬  Ricky notified — qualified applicant: {applicant_email}")
+                    tool_results.append({
+                        "type": "user.custom_tool_result",
+                        "custom_tool_use_id": call.id,
+                        "content": [{"type": "text", "text": (
+                            "Ricky Lee has been notified by email with the applicant's "
+                            "full details and asked to provide his showing availability."
+                        )}],
+                    })
+
             # Send the tool results back so the agent can continue
             client.beta.sessions.events.send(
                 session_id=session.id,
@@ -287,7 +352,7 @@ Instructions:
         except Exception:
             pass  # cleanup failure is not critical
 
-    return reply_text, reply_email, was_disqualified
+    return reply_text, reply_email, was_disqualified, landlord_notified
 
 
 # ─── Main ───────────────────────────────────────────────────────────────────────
@@ -350,15 +415,16 @@ def main():
             continue
 
         # Hand the email to the AI agent
-        reply_text, reply_email, was_disqualified = run_agent_on_email(em, config)
+        reply_text, reply_email, was_disqualified, landlord_notified = run_agent_on_email(em, config)
 
         # Act on the agent's decision
         if reply_text and reply_email:
             send_email(reply_email, em["subject"], reply_text)
             processed[em["id"]] = {
-                "status": "replied",
-                "to":     reply_email,
-                "ts":     datetime.now().isoformat(),
+                "status":            "replied",
+                "to":                reply_email,
+                "landlord_notified": landlord_notified,
+                "ts":                datetime.now().isoformat(),
             }
         elif was_disqualified:
             processed[em["id"]] = {
