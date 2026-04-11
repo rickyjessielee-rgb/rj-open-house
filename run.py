@@ -12,14 +12,14 @@ HOW TO RUN AUTOMATICALLY EVERY 15 MINUTES:
 
   On Mac/Linux — open Terminal and type:
     crontab -e
-    Add this line (replace /path/to/rj-open-house with your actual folder path):
-    */15 * * * * cd /path/to/rj-open-house && python run.py >> rental_log.txt 2>&1
+    Add this line (replace /path/to/rj-rental-manager with your actual folder path):
+    */15 * * * * cd /path/to/rj-rental-manager && python run.py >> rental_log.txt 2>&1
 
   On Windows — open Task Scheduler:
     • Create a Basic Task → set trigger to "Daily", repeat every 15 minutes
     • Action: Start a program → browse to python.exe
     • Add arguments: run.py
-    • Start in: your rj-open-house folder path
+    • Start in: your rj-rental-manager folder path
 
 WHAT THIS SCRIPT DOES:
   1. Connects to your Gmail and looks for unread emails from Zillow
@@ -87,59 +87,70 @@ def decode_header_value(value: str) -> str:
     return "".join(result)
 
 
-def fetch_zillow_emails() -> list[dict]:
+def fetch_inquiry_emails() -> list[dict]:
     """
-    Connect to Gmail via IMAP, fetch all unread emails from Zillow,
-    mark them as read, and return their content as a list.
+    Connect to Gmail via IMAP, fetch all unread rental inquiry emails from
+    both Zillow and Realtor.com, mark them as read, and return as a list.
+
+    Each email dict includes a "source" field — either "zillow" or "realtor" —
+    so the agent knows which platform the lead came from and how to reply.
     """
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     mail.login(GMAIL_ADDRESS, GMAIL_APP_PASS)
     mail.select("inbox")
 
-    # Look for unread emails that came from a zillow address
-    _, message_ids = mail.search(None, '(UNSEEN FROM "zillow")')
-
     emails = []
-    for msg_id in message_ids[0].split():
-        if not msg_id:
-            continue
 
-        # Fetch the full email
-        _, data = mail.fetch(msg_id, "(RFC822)")
-        raw_bytes = data[0][1]
-        msg = email.message_from_bytes(raw_bytes)
+    # Search for unread inquiries from both platforms
+    sources = [
+        ("zillow",  '(UNSEEN FROM "zillow")'),
+        ("realtor", '(UNSEEN FROM "leads@email.realtor.com")'),
+    ]
 
-        # Pull out the key headers
-        subject  = decode_header_value(msg.get("Subject", "(no subject)"))
-        sender   = decode_header_value(msg.get("From", ""))
-        reply_to = msg.get("Reply-To") or msg.get("From", "")
-        date     = msg.get("Date", "")
+    for source_name, search_query in sources:
+        _, message_ids = mail.search(None, search_query)
 
-        # Extract the plain-text body
-        body = ""
-        if msg.is_multipart():
-            for part in msg.walk():
-                if part.get_content_type() == "text/plain":
-                    payload = part.get_payload(decode=True)
-                    if payload:
-                        body = payload.decode("utf-8", errors="ignore")
-                        break
-        else:
-            payload = msg.get_payload(decode=True)
-            if payload:
-                body = payload.decode("utf-8", errors="ignore")
+        for msg_id in message_ids[0].split():
+            if not msg_id:
+                continue
 
-        emails.append({
-            "id":       msg_id.decode(),
-            "subject":  subject,
-            "sender":   sender,
-            "reply_to": reply_to,
-            "date":     date,
-            "body":     body,
-        })
+            # Fetch the full email
+            _, data = mail.fetch(msg_id, "(RFC822)")
+            raw_bytes = data[0][1]
+            msg = email.message_from_bytes(raw_bytes)
 
-        # Mark the email as read so we don't process it twice
-        mail.store(msg_id, "+FLAGS", "\\Seen")
+            # Pull out the key headers
+            subject  = decode_header_value(msg.get("Subject", "(no subject)"))
+            sender   = decode_header_value(msg.get("From", ""))
+            reply_to = msg.get("Reply-To") or msg.get("From", "")
+            date     = msg.get("Date", "")
+
+            # Extract the plain-text body
+            body = ""
+            if msg.is_multipart():
+                for part in msg.walk():
+                    if part.get_content_type() == "text/plain":
+                        payload = part.get_payload(decode=True)
+                        if payload:
+                            body = payload.decode("utf-8", errors="ignore")
+                            break
+            else:
+                payload = msg.get_payload(decode=True)
+                if payload:
+                    body = payload.decode("utf-8", errors="ignore")
+
+            emails.append({
+                "id":       msg_id.decode(),
+                "subject":  subject,
+                "sender":   sender,
+                "reply_to": reply_to,
+                "date":     date,
+                "body":     body,
+                "source":   source_name,   # "zillow" or "realtor"
+            })
+
+            # Mark the email as read so we don't process it twice
+            mail.store(msg_id, "+FLAGS", "\\Seen")
 
     mail.logout()
     return emails
@@ -208,9 +219,13 @@ def run_agent_on_email(em: dict, config: dict) -> tuple:
     """
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-    # Build the message we'll send to the agent
-    agent_message = f"""New Zillow rental inquiry received:
+    # Label for logging — shows where the lead came from
+    source_label = "Zillow" if em["source"] == "zillow" else "Realtor.com"
 
+    # Build the message we'll send to the agent
+    agent_message = f"""New rental inquiry received from {source_label}:
+
+SOURCE: {source_label}
 FROM: {em['sender']}
 REPLY-TO: {em['reply_to']}
 DATE: {em['date']}
@@ -221,16 +236,28 @@ EMAIL BODY:
 
 ---
 Instructions:
-1. Extract the applicant's actual email address from the content above.
-2. Apply the disqualification rules in order:
+
+STEP 1 — Find the applicant's email address to use for send_reply:
+  • If SOURCE is Zillow:
+      Use the REPLY-TO address shown above directly. Zillow sets this to the
+      renter's address (or a Zillow-proxied address that reaches them).
+  • If SOURCE is Realtor.com:
+      The REPLY-TO is leads@email.realtor.com — do NOT reply there.
+      Search the EMAIL BODY carefully for the renter's actual email address
+      and use that as the to_email when calling send_reply.
+
+STEP 2 — Apply the disqualification rules in order:
    a. Pets / ESA / service animals mentioned → call ignore_applicant immediately.
    b. Credit score below 680 → call ignore_applicant immediately.
    c. Monthly income less than 2x the monthly rent → call ignore_applicant immediately.
       (Use web_search to find the current asking rent if needed.)
-3. If disqualified → call ignore_applicant. Do NOT send any reply.
-4. If not yet disqualified and qualification questions not yet answered →
+
+STEP 3 — If disqualified → call ignore_applicant. Do NOT send any reply.
+
+STEP 4 — If not yet disqualified and qualification questions not yet answered →
    call send_reply with the standard five questions.
-5. If applicant answered all questions and passes all checks (fully qualified) →
+
+STEP 5 — If applicant answered all questions and passes all checks (fully qualified) →
    call notify_landlord with their details, then call send_reply to confirm a
    showing will be arranged.
 """
@@ -379,17 +406,17 @@ def main():
     processed    = load_json(PROCESSED_FILE)
     disqualified = load_json(DISQUALIFIED_FILE)
 
-    # ── Fetch new Zillow emails ───────────────────────────────────────────────
-    print("📬  Checking Gmail for new Zillow inquiries...")
+    # ── Fetch new inquiry emails (Zillow + Realtor.com) ──────────────────────
+    print("📬  Checking Gmail for new inquiries (Zillow + Realtor.com)...")
     try:
-        emails = fetch_zillow_emails()
+        emails = fetch_inquiry_emails()
     except imaplib.IMAP4.error as exc:
         print(f"❌  Gmail login failed: {exc}")
         print("    Check that IMAP is enabled and your GMAIL_APP_PASSWORD is correct.")
         return
 
     if not emails:
-        print("✅  No new Zillow inquiries.")
+        print("✅  No new inquiries.")
         return
 
     print(f"📩  Found {len(emails)} new email(s).\n")
