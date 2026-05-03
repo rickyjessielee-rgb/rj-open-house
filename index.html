@@ -224,12 +224,15 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h3>⚙️ Settings</h3>
-    <p>Current Apps Script URL:</p>
+    <p style="font-size:13px;color:#8A8A8A;margin-bottom:4px;">Current Property:</p>
+    <div class="modal-url" id="currentProp">—</div>
+    <p style="font-size:13px;color:#8A8A8A;margin-bottom:4px;">Apps Script URL:</p>
     <div class="modal-url" id="currentUrl">—</div>
-    <div class="modal-btns">
-      <button class="modal-btns btn-cancel" onclick="closeSettings()" style="flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#f0f0f0;color:#666;">Cancel</button>
-      <button class="modal-btns btn-change" onclick="changeScriptUrl()" style="flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;">Change URL</button>
-      <button class="modal-btns btn-danger" onclick="fullReset()" style="flex:1;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e53935;color:#fff;">Full Reset</button>
+    <div class="modal-btns" style="flex-wrap:wrap;gap:8px;">
+      <button onclick="closeSettings()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#f0f0f0;color:#666;">Cancel</button>
+      <button onclick="changeAddress()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:var(--gold);color:var(--navy-dark);">📍 Change Address</button>
+      <button onclick="changeScriptUrl()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;">Change URL</button>
+      <button onclick="fullReset()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e53935;color:#fff;">Full Reset</button>
     </div>
   </div>
 </div>
@@ -410,11 +413,21 @@ function exportCSV() {
 
 // ── Settings modal ─────────────────────────────────
 function openSettings() {
-  document.getElementById('currentUrl').textContent = scriptUrl || 'Not set';
+  document.getElementById('currentProp').textContent = property || 'Not set';
+  document.getElementById('currentUrl').textContent  = scriptUrl || 'Not set';
   document.getElementById('modalOverlay').classList.add('show');
 }
 function closeSettings() {
   document.getElementById('modalOverlay').classList.remove('show');
+}
+function changeAddress() {
+  closeSettings();
+  const newProp = prompt('Enter the new property address:', property);
+  if (!newProp || !newProp.trim()) return;
+  property = newProp.trim();
+  localStorage.setItem(K.prop, property);
+  document.getElementById('propDisplay').textContent = property;
+  alert('Address updated to:\n' + property);
 }
 function changeScriptUrl() {
   closeSettings();
