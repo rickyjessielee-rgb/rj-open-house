@@ -342,6 +342,9 @@ async function submitForm() {
   document.getElementById('formSection').style.display = 'none';
   const s = document.getElementById('successSection');
   s.style.display='flex'; s.style.flexDirection='column'; s.style.alignItems='center';
+  // Hide log and export bar during thank you screen
+  document.getElementById('logWrap').style.display = 'none';
+  document.getElementById('xbar').style.display = 'none';
   renderLog();
 }
 
@@ -353,6 +356,8 @@ function nextGuest() {
   document.getElementById('formSection').style.display='block';
   document.getElementById('successSection').style.display='none';
   document.getElementById('fName').focus();
+  // Restore log and export bar
+  renderLog();
 }
 
 async function syncEntry(entry) {
