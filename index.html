@@ -70,10 +70,12 @@
 .btn-gold { background:var(–gold); color:var(–navy-dark); }
 .btn-sm   { width:auto; padding:13px 36px; margin-top:0; font-size:15px; }
 
-.success { display:none; flex-direction:column; align-items:center; text-align:center; padding:32px 16px; background:#fff; border-radius:var(–radius); }
-.tick { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#2D7D46,#43A85F); display:flex; align-items:center; justify-content:center; font-size:38px; margin-bottom:20px; }
-.success h2   { font-size:26px; font-weight:700; color:var(–navy); margin-bottom:8px; }
-.success p    { font-size:15px; color:#555; margin-bottom:24px; max-width:260px; line-height:1.5; }
+.success { display:none; flex-direction:column; align-items:center; text-align:center; padding:40px 24px 32px; background:#fff; border-radius:var(–radius); }
+.tick { width:88px; height:88px; border-radius:50%; background:linear-gradient(135deg,#2D7D46,#43A85F); display:flex; align-items:center; justify-content:center; font-size:42px; color:#fff; margin-bottom:24px; box-shadow:0 8px 24px rgba(45,125,70,0.25); }
+.success h2   { font-size:28px; font-weight:700; color:var(–navy); margin-bottom:10px; }
+.success p    { font-size:16px; color:#555; margin-bottom:32px; max-width:280px; line-height:1.6; }
+.btn-next-guest { padding:16px 48px; background:var(–navy); color:#fff; border:none; border-radius:12px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:0.03em; box-shadow:0 4px 16px rgba(27,58,107,0.25); transition:transform 0.12s; }
+.btn-next-guest:active { transform:scale(0.97); }
 
 /* Settings gear */
 .gear-btn { position:fixed; bottom:20px; right:20px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:100; }
@@ -202,12 +204,8 @@
   <div class="success" id="successSection">
     <div class="tick">✓</div>
     <h2>Thank you!</h2>
-    <p>Enjoy exploring the home. We'll be in touch soon.</p>
-
-```
-<button class="btn btn-gold btn-sm" onclick="nextGuest()">Next Guest →</button>
-```
-
+    <p>Enjoy exploring the home.<br>We'll be in touch with you soon.</p>
+    <button class="btn-next-guest" onclick="nextGuest()">Next Guest →</button>
   </div>
 </div>
 
@@ -248,10 +246,12 @@
       <button id="testModeToggle" onclick="toggleTestMode()" style="padding:8px 18px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;"></button>
     </div>
     <div class="modal-btns" style="flex-wrap:wrap;gap:8px;">
-      <button onclick="closeSettings()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#f0f0f0;color:#666;">Cancel</button>
+      <button onclick="closeSettings()" style="width:100%;padding:16px;border:none;border-radius:10px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;background:#1B3A6B;color:#fff;margin-top:4px;">✕ Close Settings</button>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
       <button onclick="changeAddress()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:var(--gold);color:var(--navy-dark);">📍 Change Address</button>
-      <button onclick="changeScriptUrl()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;">Change URL</button>
+      <button onclick="changeScriptUrl()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e0e0e0;color:#333;">Change URL</button>
       <button onclick="fullReset()" style="flex:1;min-width:120px;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e53935;color:#fff;">Full Reset</button>
+      </div>
     </div>
   </div>
 </div>
