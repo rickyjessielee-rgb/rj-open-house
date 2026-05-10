@@ -70,11 +70,10 @@
 .btn-gold { background:var(–gold); color:var(–navy-dark); }
 .btn-sm   { width:auto; padding:13px 36px; margin-top:0; font-size:15px; }
 
-.success { display:none; flex-direction:column; align-items:center; text-align:center; padding:16px 0; }
+.success { display:none; flex-direction:column; align-items:center; text-align:center; padding:32px 16px; background:#fff; border-radius:var(–radius); }
 .tick { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#2D7D46,#43A85F); display:flex; align-items:center; justify-content:center; font-size:38px; margin-bottom:20px; }
 .success h2   { font-size:26px; font-weight:700; color:var(–navy); margin-bottom:8px; }
-.success p    { font-size:15px; color:var(–gray); margin-bottom:6px; max-width:260px; line-height:1.5; }
-.sync-msg     { font-size:13px; font-weight:700; color:#2D7D46; margin-bottom:24px; }
+.success p    { font-size:15px; color:#555; margin-bottom:24px; max-width:260px; line-height:1.5; }
 
 /* Settings gear */
 .gear-btn { position:fixed; bottom:20px; right:20px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:100; }
@@ -343,6 +342,7 @@ async function submitForm() {
   const s = document.getElementById('successSection');
   s.style.display='flex'; s.style.flexDirection='column'; s.style.alignItems='center';
   // Hide log and export bar during thank you screen
+  guestViewMode = true;
   document.getElementById('logWrap').style.display = 'none';
   document.getElementById('xbar').style.display = 'none';
   renderLog();
@@ -357,6 +357,7 @@ function nextGuest() {
   document.getElementById('successSection').style.display='none';
   document.getElementById('fName').focus();
   // Restore log and export bar
+  guestViewMode = false;
   renderLog();
 }
 
@@ -393,11 +394,13 @@ function setSyncStatus(state, label) {
   document.getElementById('syncLbl').textContent = label;
 }
 
+let guestViewMode = false;
+
 function renderLog() {
   const n = guests.length;
   document.getElementById('logCnt').textContent = n;
-  document.getElementById('logWrap').style.display = n?'block':'none';
-  document.getElementById('xbar').style.display    = n?'flex':'none';
+  document.getElementById('logWrap').style.display = (!guestViewMode && n) ? 'block' : 'none';
+  document.getElementById('xbar').style.display    = (!guestViewMode && n) ? 'flex'  : 'none';
   document.getElementById('logList').innerHTML = [...guests].reverse().map(g => {
     const ini = g.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
     const detail = [g.email,g.wechat].filter(Boolean).join(' · ');
