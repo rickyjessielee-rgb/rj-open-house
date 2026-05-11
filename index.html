@@ -45,7 +45,7 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   .prop-banner { width:calc(100% - 32px); max-width:680px; background:var(--navy); padding:14px 24px; border-radius:0 0 14px 14px; display:flex; align-items:center; justify-content:center; gap:12px; }
-  .prop-label   { font-size:12px; font-weight:700; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.1em; }
+  .prop-label   { font-size:16px; font-weight:700; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.15em; }
   .prop-divider { width:1px; height:22px; background:rgba(255,255,255,0.2); }
   .prop-address { font-size:21px; font-weight:700; color:#ffffff; }
 
@@ -128,16 +128,14 @@
   <div class="logo-badge"><div class="logo-dot"></div><span class="logo-text">RJ Realty</span></div>
   <h1>Welcome!</h1>
   <p>Please sign in to explore this property</p>
-  <div class="sync-pill">
-    <div class="sync-dot" id="syncDot"></div>
-    <span id="syncLbl">Not connected</span>
-  </div>
 </div>
 
 <!-- Test mode banner -->
 <div id="testBanner" style="display:none;width:100%;background:#f59e0b;padding:8px;text-align:center;font-size:13px;font-weight:700;color:#1c1c1c;letter-spacing:0.05em;">
   🧪 TEST MODE — submissions will NOT be saved to Google Sheets
 </div>
+
+<div class="prop-banner">
   <span class="prop-label">Open House</span>
   <div class="prop-divider"></div>
   <span class="prop-address" id="propDisplay">—</span>
@@ -308,7 +306,6 @@ async function submitForm() {
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = 'Saving...';
-  setSyncStatus('go','Saving to Google Sheet...');
 
   const now = new Date();
   const entry = {
