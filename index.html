@@ -316,21 +316,28 @@ async function submitForm() {
     synced: false
   };
 
-  entry.synced = await syncEntry(entry);
+  // Save locally first
   if (!testMode) {
     guests.push(entry);
     localStorage.setItem(K.guests, JSON.stringify(guests));
   }
 
-
-  setSyncStatus(entry.synced ? 'ok' : 'err',
-    entry.synced ? 'Connected to Google Sheet' : 'Offline — saved locally');
-
+  // Show thank you immediately — don't wait for Google Sheets
   btn.disabled = false; btn.textContent = 'Sign In →';
   document.getElementById('formSection').style.display = 'none';
   const s = document.getElementById('successSection');
   s.style.display='flex'; s.style.flexDirection='column'; s.style.alignItems='center';
   renderLog();
+
+  // Sync to Google Sheets silently in background
+  if (!testMode) {
+    syncEntry(entry).then(synced => {
+      if (synced) {
+        entry.synced = true;
+        localStorage.setItem(K.guests, JSON.stringify(guests));
+      }
+    }).catch(() => {});
+  }
 }
 
 function nextGuest() {
@@ -348,11 +355,15 @@ async function syncEntry(entry) {
   if (testMode) return false;
   if (!scriptUrl) return false;
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     await fetch(scriptUrl, {
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(entry)
+      body: JSON.stringify(entry),
+      signal: controller.signal
     });
+    clearTimeout(timeout);
     return true;
   } catch { return false; }
 }
