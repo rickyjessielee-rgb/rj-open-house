@@ -1,0 +1,14 @@
+# Secret keys — NEVER commit these
+.env
+
+# Agent data files (created automatically when you run the scripts)
+agent_config.json
+processed_emails.json
+disqualified_emails.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
