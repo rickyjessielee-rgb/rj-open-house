@@ -218,7 +218,12 @@
       <button onclick="retrySync();closeSettings();" style="flex:1;padding:13px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e8f5e9;color:#2D7D46;">↻ Sync</button>
       <button onclick="exportCSV();closeSettings();" style="flex:1;padding:13px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#e3f2fd;color:#1565c0;">⬇ Export CSV</button>
     </div>
-    <p style="font-size:12px;color:#aaa;margin-bottom:12px;text-align:center;">Guests today: <strong id="guestCountModal">0</strong></p>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <button onclick="testConnection()" style="flex:1;padding:13px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#ede7f6;color:#4527a0;">Test Connection</button>
+      <button onclick="resendToday()" style="flex:1;padding:13px;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:#fff3e0;color:#e65100;">Resend Today</button>
+    </div>
+    <p id="connStatus" style="font-size:12px;color:#8A8A8A;margin-bottom:8px;text-align:center;">Connection: not tested</p>
+    <p style="font-size:12px;color:#aaa;margin-bottom:12px;text-align:center;">Guests today: <strong id="guestCountModal">0</strong> &nbsp;·&nbsp; Not yet in sheet: <strong id="pendingCountModal">0</strong></p>
     <div style="display:flex;align-items:center;justify-content:space-between;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:12px 16px;margin-bottom:12px;">
       <span style="font-size:14px;font-weight:700;color:#b45309;">🧪 Test Mode</span>
       <button id="testModeToggle" onclick="toggleTestMode()" style="padding:8px 18px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;"></button>
@@ -253,6 +258,8 @@ window.onload = () => {
   else { showMain(); }
   renderLog();
   applyTestMode();
+  // Quietly push any sign-ins that never reached the sheet
+  if (scriptUrl && !testMode && guests.some(g=>!g.synced)) retrySync(true);
 };
 
 function show(id) {
@@ -351,42 +358,95 @@ function nextGuest() {
   renderLog();
 }
 
+// Sends one entry and only reports success when the Apps Script confirms it
+// wrote the row. Uses a CORS "simple request" (text/plain) so the response
+// can be read; a sign-in/access-denied page makes fetch throw, so a blocked
+// deployment is no longer mistaken for a successful save.
+const SYNC_TIMEOUT_MS = 15000;
+
 async function syncEntry(entry) {
   if (testMode) return false;
   if (!scriptUrl) return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    await fetch(scriptUrl, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
+    const res = await fetch(scriptUrl, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify(entry),
+      redirect:'follow',
       signal: controller.signal
     });
+    if (!res.ok) return false;
+    const data = await res.json().catch(() => null);
+    return !!(data && data.status === 'ok');
+  } catch {
+    return false;
+  } finally {
     clearTimeout(timeout);
-    return true;
-  } catch { return false; }
+  }
 }
 
-async function retrySync() {
+async function retrySync(silent) {
   const pending = guests.filter(g=>!g.synced);
-  if (!pending.length) { alert('All entries already synced! ✅'); return; }
+  if (!pending.length) { if (!silent) alert('All entries are in the sheet.'); return; }
   setSyncStatus('go',`Syncing ${pending.length} pending...`);
   let done=0;
   for (const g of pending) { if (await syncEntry(g)) { g.synced=true; done++; } }
   localStorage.setItem(K.guests, JSON.stringify(guests));
   renderLog();
-  setSyncStatus('ok','Connected to Google Sheet');
-  alert(`Synced ${done} of ${pending.length} entries.`);
+  setSyncStatus(done===pending.length ? 'ok' : 'err', done===pending.length ? 'Connected' : 'Some entries not sent');
+  if (!silent) alert(`Sent ${done} of ${pending.length} entries to the sheet.` + (done<pending.length ? '\n\nTap Test Connection to check the Apps Script setup.' : ''));
+}
+
+function todayStr() { return new Date().toLocaleDateString('en-US'); }
+
+// Re-sends every sign-in from today regardless of its synced flag.
+// Needed once for entries an older version wrongly marked as sent.
+async function resendToday() {
+  const today = guests.filter(g => g.date === todayStr());
+  if (!today.length) { alert('No sign-ins saved on this device today.'); return; }
+  if (!confirm(`Resend ${today.length} sign-in(s) from today to the sheet?\n\nOnly do this if they are missing from the sheet, or you will get duplicate rows.`)) return;
+  closeSettings();
+  let done=0;
+  for (const g of today) { if (await syncEntry(g)) { g.synced=true; done++; } else { g.synced=false; } }
+  localStorage.setItem(K.guests, JSON.stringify(guests));
+  alert(`Sent ${done} of ${today.length} to the sheet.` + (done<today.length ? '\n\nNot all went through. Tap Test Connection, or use Export CSV as a backup.' : ''));
+}
+
+// Pings the Apps Script (doGet ?ping=1). Does not add a row.
+async function testConnection() {
+  const el = document.getElementById('connStatus');
+  if (!scriptUrl) { el.textContent = 'Connection: no Apps Script URL set'; el.style.color='#e53935'; return; }
+  el.textContent = 'Connection: testing...'; el.style.color='#8A8A8A';
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+  let ok = false;
+  try {
+    const res = await fetch(scriptUrl + (scriptUrl.includes('?') ? '&' : '?') + 'ping=1', { signal: controller.signal });
+    const data = await res.json().catch(() => null);
+    ok = !!(data && data.status === 'ok');
+  } catch { ok = false; } finally { clearTimeout(timeout); }
+  if (ok) {
+    el.textContent = 'Connection: working — sign-ins will save to the sheet'; el.style.color='#2D7D46';
+    setSyncStatus('ok','Connected');
+  } else {
+    el.textContent = 'Connection: NOT working — check deployment access is "Anyone" and the latest script is deployed'; el.style.color='#e53935';
+    setSyncStatus('err','Not connected');
+  }
 }
 
 function setSyncStatus(state, label) {
+  // Status is internal only; guests never see a "saved to Google Sheets" notice.
   const dot = document.getElementById('syncDot');
-  dot.className='sync-dot';
-  if (state==='ok')  dot.classList.add('ok');
-  if (state==='go')  dot.classList.add('go');
-  if (state==='err') dot.classList.add('err');
-  document.getElementById('syncLbl').textContent = label;
+  const lbl = document.getElementById('syncLbl');
+  if (dot) {
+    dot.className='sync-dot';
+    if (state==='ok')  dot.classList.add('ok');
+    if (state==='go')  dot.classList.add('go');
+    if (state==='err') dot.classList.add('err');
+  }
+  if (lbl) lbl.textContent = label;
 }
 
 let guestViewMode = false;
@@ -429,7 +489,8 @@ function toggleTestMode() {
 function openSettings() {
   document.getElementById('currentProp').textContent = property || 'Not set';
   document.getElementById('currentUrl').textContent  = scriptUrl || 'Not set';
-  document.getElementById('guestCountModal').textContent = guests.length;
+  document.getElementById('guestCountModal').textContent = guests.filter(g => g.date === todayStr()).length;
+  document.getElementById('pendingCountModal').textContent = guests.filter(g => !g.synced).length;
   applyTestMode();
   document.getElementById('modalOverlay').classList.add('show');
 }
