@@ -13,18 +13,14 @@ Owner: Ricky Lee, RJ Realty. Prefers zero manual steps; do the work, report brie
 ## Hard rule
 Guests must never see any "saved to Google Sheets" style message. The success screen stays "Thank you! Enjoy exploring the home."
 
-## Status (Oct 10, 2026)
+## Status (Oct 11, 2026)
 - Deployment access fixed (Anyone). Sign-ins save to the sheet with Synced = Yes.
-- OPEN: the deployment still serves the OLD script (no doGet), so Settings > Test Connection shows red.
-  `?ping=1` returns "Script function not found: doGet".
-- Fix: deploy `apps-script/Code.gs` as a new version of the EXISTING deployment via clasp:
-  1. One-time, by Ricky: enable "Google Apps Script API" at https://script.google.com/home/usersettings
-  2. `npm i -g @google/clasp` then `clasp login` (Ricky approves in browser as rickyjessie.lee@gmail.com)
-  3. Get the script ID: sheet > Extensions > Apps Script > Project Settings > Script ID
-     (or `clasp clone <scriptId> --rootDir apps-script`)
-  4. `clasp push` from apps-script/, then `clasp deployments` to find the deployment ID that matches the URL above,
-     then `clasp deploy -i <deploymentId> -d "doGet ping"` (same URL, new version)
-  5. Verify: GET `<exec URL>?ping=1` returns `{"status":"ok"}`
+- DONE: `apps-script/Code.gs` (with doGet) pushed via clasp and deployed to the existing deployment as version 5
+  ("doGet ping"), same URL. Script ID: 1_AEtjpY4K6On9R7-mb4A3LAUdC3yHlxvA9iBXv4ZIYk19nT83oMeq0DR
+- To verify: open `<exec URL>?ping=1`; expect `{"status":"ok"}`, then Settings > Test Connection should be green.
+  (Not verified from the cloud sandbox: script.google.com is blocked by its network policy.)
+- To redeploy later: `clasp clone <scriptId>`, copy Code.gs over Code.js, `clasp push -f`,
+  `clasp deploy -i AKfycbzaSIhO5skUUTQ1rubyozaxCP1BkD0eO5s6vKMh_FAa4qioYbjJT2tpQ0xy6sshsB6i -d "<note>"`
 
 ## Other open items
 - Sheet cleanup: Damietta rows (20239-20249 drag-fill error, no dates), ~200 email-only rows, duplicates
