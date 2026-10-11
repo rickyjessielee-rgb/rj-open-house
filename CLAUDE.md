@@ -17,8 +17,7 @@ Guests must never see any "saved to Google Sheets" style message. The success sc
 - Deployment access fixed (Anyone). Sign-ins save to the sheet with Synced = Yes.
 - DONE: `apps-script/Code.gs` (with doGet) pushed via clasp and deployed to the existing deployment as version 5
   ("doGet ping"), same URL. Script ID: 1_AEtjpY4K6On9R7-mb4A3LAUdC3yHlxvA9iBXv4ZIYk19nT83oMeq0DR
-- To verify: open `<exec URL>?ping=1`; expect `{"status":"ok"}`, then Settings > Test Connection should be green.
-  (Not verified from the cloud sandbox: script.google.com is blocked by its network policy.)
+- VERIFIED by Ricky (Oct 11): `?ping=1` returns ok and Settings > Test Connection is green. Item closed.
 - To redeploy later: `clasp clone <scriptId>`, copy Code.gs over Code.js, `clasp push -f`,
   `clasp deploy -i AKfycbzaSIhO5skUUTQ1rubyozaxCP1BkD0eO5s6vKMh_FAa4qioYbjJT2tpQ0xy6sshsB6i -d "<note>"`
 
